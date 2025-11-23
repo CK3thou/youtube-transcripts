@@ -21,7 +21,7 @@ import java.util.zip.ZipOutputStream
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    private var videoList = mutableListOf<VideoInfo>()
+    private var videoList: List<VideoInfo> = listOf()
     private var isPlaylist = false
     private val STORAGE_PERMISSION_CODE = 100
 
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
             startDownload()
         }
 
-        binding.startVideoSpinner.setOnItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+        binding.startVideoSpinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
                 updateVideoList(position)
             }
