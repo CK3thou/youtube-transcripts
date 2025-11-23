@@ -28,7 +28,16 @@ pip install youtube-transcript-api pytube requests beautifulsoup4 flask flask-co
 
 ## Usage
 
-### Web Interface (Recommended)
+### Quick Start (Recommended)
+
+Simply run the main application:
+```bash
+python main.py
+```
+
+This will automatically start the web server and open your browser to the interface.
+
+### Web Interface
 
 1. Start the web server:
 ```bash
