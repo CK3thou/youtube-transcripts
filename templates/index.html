@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Transcript Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            background: white;
+        }
+
+        .video-list {
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+
+        .video-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #667eea;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        .log-success {
+            color: #00ff00;
+        }
+
+        .log-error {
+            color: #ff4444;
+        }
+
+        .log-info {
+            color: #00aaff;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 YouTube Transcript Downloader</h1>
+            <p>Download transcripts from YouTube videos and playlists</p>
+        </div>
+
+        <div class="content">
+            <!-- URL Input Section -->
+            <div class="section">
+                <div class="section-title">Enter YouTube URL</div>
+                <div class="input-group">
+                    <input type="text" id="urlInput" placeholder="Paste YouTube video or playlist URL here...">
+                    <button onclick="loadUrl()" id="loadBtn">Load</button>
+                </div>
+            </div>
+
+            <!-- Playlist Options Section -->
+            <div class="section hidden" id="playlistSection">
+                <div class="section-title">Start From Video</div>
+                <select id="startVideoSelect" onchange="updateVideoList()">
+                    <option value="0">1. First video</option>
+                </select>
+            </div>
+
+            <!-- Video List Section -->
+            <div class="section hidden" id="videoListSection">
+                <div class="section-title">Videos to Download (<span id="videoCount">0</span>)</div>
+                <div class="video-list" id="videoList"></div>
+            </div>
+
+            <!-- Download Button -->
+            <div class="button-group hidden" id="actionButtons">
+                <button onclick="startDownload()" id="downloadBtn">Start Download</button>
+                <button onclick="cancelDownload()" id="cancelBtn" disabled>Cancel</button>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="progress-container" id="progressContainer">
+                <div class="section-title">Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+                <div id="progressText" style="margin-bottom: 10px; color: #666;">Ready</div>
+            </div>
+
+            <!-- Log Section -->
+            <div class="section">
+                <div class="section-title">Log</div>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry log-info">Ready to download transcripts...</div>
+                </div>
+            </div>
+
+            <!-- Download Zip Button -->
+            <div class="button-group hidden" id="downloadZipSection">
+                <button onclick="downloadZip()">Download All as ZIP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let videoData = [];
+        let downloadedFiles = [];
+        let isDownloading = false;
+
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        async function loadUrl() {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            const loadBtn = document.getElementById('loadBtn');
+            loadBtn.disabled = true;
+            loadBtn.innerHTML = 'Loading...<span class="spinner"></span>';
+            log('Loading URL...', 'info');
+
+            try {
+                const response = await fetch('/api/load_url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load URL');
+                }
+
+                videoData = data.videos;
+                log(`Found ${data.count} video(s)`, 'success');
+
+                if (data.type === 'playlist') {
+                    setupPlaylistUI(data.videos);
+                } else {
+                    setupSingleVideoUI(data.videos);
+                }
+
+                document.getElementById('videoListSection').classList.remove('hidden');
+                document.getElementById('actionButtons').classList.remove('hidden');
+
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                alert(`Error: ${error.message}`);
+            } finally {
+                loadBtn.disabled = false;
+                loadBtn.textContent = 'Load';
+            }
+        }
+
+        function setupPlaylistUI(videos) {
+            const playlistSection = document.getElementById('playlistSection');
+            const select = document.getElementById('startVideoSelect');
+
+            playlistSection.classList.remove('hidden');
+            select.innerHTML = videos.map((v, i) => 
+                `<option value="${i}">${i + 1}. ${v.title}</option>`
+            ).join('');
+
+            updateVideoList();
+        }
+
+        function setupSingleVideoUI(videos) {
+            document.getElementById('playlistSection').classList.add('hidden');
+            displayVideos(videos, 0);
+        }
+
+        function updateVideoList() {
+            const startIndex = parseInt(document.getElementById('startVideoSelect').value);
+            displayVideos(videoData, startIndex);
+        }
+
+        function displayVideos(videos, startIndex) {
+            const videoList = document.getElementById('videoList');
+            const count = document.getElementById('videoCount');
+
+            const videosToShow = videos.slice(startIndex);
+            count.textContent = videosToShow.length;
+
+            videoList.innerHTML = videosToShow.map((v, i) => 
+                `<div class="video-item">${startIndex + i + 1}. ${v.title}</div>`
+            ).join('');
+        }
+
+        async function startDownload() {
+            const startIndex = document.getElementById('playlistSection').classList.contains('hidden') 
+                ? 0 
+                : parseInt(document.getElementById('startVideoSelect').value);
+
+            isDownloading = true;
+            downloadedFiles = [];
+
+            document.getElementById('downloadBtn').disabled = true;
+            document.getElementById('cancelBtn').disabled = false;
+            document.getElementById('loadBtn').disabled = true;
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('downloadZipSection').classList.add('hidden');
+
+            log('Starting download...', 'info');
+
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        videos: videoData, 
+                        start_index: startIndex 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Download failed');
+                }
+
+                const results = data.results;
+                let successCount = 0;
+                let errorCount = 0;
+
+                results.forEach((result, index) => {
+                    const progress = ((index + 1) / results.length) * 100;
+                    updateProgress(progress, `Processing ${index + 1}/${results.length}`);
+
+                    if (result.success) {
+                        successCount++;
+                        log(`✓ [${result.video_num}] ${result.title}`, 'success');
+                        downloadedFiles.push({
+                            filename: result.filename,
+                            content: result.content
+                        });
+                    } else {
+                        errorCount++;
+                        log(`✗ [${result.video_num}] ${result.title}: ${result.error}`, 'error');
+                    }
+                });
+
+                log(`\nCompleted! ${successCount} successful, ${errorCount} failed`, 'info');
+                
+                if (downloadedFiles.length > 0) {
+                    document.getElementById('downloadZipSection').classList.remove('hidden');
+                }
+
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                alert(`Error: ${error.message}`);
+            } finally {
+                isDownloading = false;
+                document.getElementById('downloadBtn').disabled = false;
+                document.getElementById('cancelBtn').disabled = true;
+                document.getElementById('loadBtn').disabled = false;
+            }
+        }
+
+        function updateProgress(percentage, text) {
+            const fill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            fill.style.width = percentage + '%';
+            fill.textContent = Math.round(percentage) + '%';
+            progressText.textContent = text;
+        }
+
+        function cancelDownload() {
+            isDownloading = false;
+            log('Download cancelled by user', 'info');
+        }
+
+        async function downloadZip() {
+            if (downloadedFiles.length === 0) {
+                alert('No files to download');
+                return;
+            }
+
+            log('Creating ZIP file...', 'info');
+
+            try {
+                const response = await fetch('/api/download_zip', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ files: downloadedFiles })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create ZIP file');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'transcripts.zip';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                log('ZIP file downloaded successfully', 'success');
+
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                alert(`Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

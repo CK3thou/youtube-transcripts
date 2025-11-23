@@ -1,0 +1,6 @@
+youtube-transcript-api
+pytube
+requests
+beautifulsoup4
+flask
+flask-cors
