@@ -249,7 +249,7 @@ class TranscriptDownloaderGUI:
             
             try:
                 # Fetch transcript
-                time.sleep(1)  # Rate limiting
+                time.sleep(5)  # Rate limiting to avoid IP blocking
                 transcript_result = api.fetch(video['id'])
                 
                 # Extract text

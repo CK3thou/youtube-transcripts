@@ -122,7 +122,7 @@ def download_transcripts():
             video_num = i + 1
             
             try:
-                time.sleep(1)  # Rate limiting
+                time.sleep(5)  # Rate limiting to avoid IP blocking
                 transcript_result = api.fetch(video['id'])
                 
                 # Extract text

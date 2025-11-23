@@ -93,7 +93,7 @@ try:
             print(f"  Title: {video_title}")
             
             # Fetch the transcript with rate limiting
-            time.sleep(1)  # Add delay to avoid rate limiting
+            time.sleep(5)  # Add delay to avoid IP blocking
             
             transcript_result = api.fetch(video_id)
             
